@@ -1148,6 +1148,9 @@ void process_mapping(bool auto_repeat) {
     uint64_t now = get_time();
     frame_counter++;
 
+    // Track which modifiers should be suppressed due to morph with keep_mods=false
+    uint8_t consumed_modifiers_mask = 0;
+
     for (auto& tap_hold : tap_hold_usages) {
         if ((*tap_hold.input_state != 0) && (*(tap_hold.input_state + PREV_STATE_OFFSET) == 0)) {
             tap_hold.pressed_at = now;
@@ -1320,6 +1323,10 @@ void process_mapping(bool auto_repeat) {
                                 morph_usage_def.bitpos,
                                 morph_usage_def.size, 1);
                     }
+                    // If keep_mods is false, mark modifiers for suppression
+                    if (!map_source.morph_keep_mods) {
+                        consumed_modifiers_mask |= map_source.morph_modifier_mask;
+                    }
                     // Skip normal output for this map_source
                     continue;
                 }
@@ -1387,6 +1394,22 @@ void process_mapping(bool auto_repeat) {
                         }
                         // we don't do RollOver
                     }
+                }
+            }
+        }
+    }
+
+    // Suppress modifiers that were consumed by morph (keep_mods=false)
+    if (consumed_modifiers_mask != 0) {
+        for (int i = 0; i < 8; i++) {
+            if (consumed_modifiers_mask & (1 << i)) {
+                auto search = our_usages_flat.find(MODIFIER_USAGES[i]);
+                if (search != our_usages_flat.end()) {
+                    const usage_def_t& mod_usage_def = search->second;
+                    put_bits(reports[mod_usage_def.report_id],
+                            report_sizes[mod_usage_def.report_id],
+                            mod_usage_def.bitpos,
+                            mod_usage_def.size, 0);
                 }
             }
         }
