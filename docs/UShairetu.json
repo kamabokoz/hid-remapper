@@ -1,0 +1,326 @@
+{
+    "version": 19,
+    "unmapped_passthrough_layers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+    ],
+    "partial_scroll_timeout": 1000000,
+    "tap_hold_threshold": 200000,
+    "gpio_debounce_time_ms": 5,
+    "interval_override": 0,
+    "our_descriptor_number": 0,
+    "ignore_auth_dev_inputs": false,
+    "macro_entry_duration": 1,
+    "gpio_output_mode": 0,
+    "input_labels": 0,
+    "normalize_gamepad_inputs": true,
+    "mappings": [
+        {
+            "target_usage": "0x0007001f",
+            "source_usage": "0x0007001f",
+            "scaling": 1000,
+            "layers": [
+                0
+            ],
+            "sticky": false,
+            "tap": false,
+            "hold": false,
+            "source_port": 0,
+            "target_port": 0,
+            "morph_usage": "0x0007002f",
+            "morph_modifier_mask": 2,
+            "morph_keep_mods": false
+        },
+        {
+            "target_usage": "0x00070023",
+            "source_usage": "0x00070023",
+            "scaling": 1000,
+            "layers": [
+                0
+            ],
+            "sticky": false,
+            "tap": false,
+            "hold": false,
+            "source_port": 0,
+            "target_port": 0,
+            "morph_usage": "0x0007002e",
+            "morph_modifier_mask": 2,
+            "morph_keep_mods": false
+        },
+        {
+            "target_usage": "0x00070024",
+            "source_usage": "0x00070024",
+            "scaling": 1000,
+            "layers": [
+                0
+            ],
+            "sticky": false,
+            "tap": false,
+            "hold": false,
+            "source_port": 0,
+            "target_port": 0,
+            "morph_usage": "0x00070023",
+            "morph_modifier_mask": 2,
+            "morph_keep_mods": true
+        },
+        {
+            "target_usage": "0x00070025",
+            "source_usage": "0x00070025",
+            "scaling": 1000,
+            "layers": [
+                0
+            ],
+            "sticky": false,
+            "tap": false,
+            "hold": false,
+            "source_port": 0,
+            "target_port": 0,
+            "morph_usage": "0x00070034",
+            "morph_modifier_mask": 2,
+            "morph_keep_mods": true
+        },
+        {
+            "target_usage": "0x00070026",
+            "source_usage": "0x00070026",
+            "scaling": 1000,
+            "layers": [
+                0
+            ],
+            "sticky": false,
+            "tap": false,
+            "hold": false,
+            "source_port": 0,
+            "target_port": 0,
+            "morph_usage": "0x00070025",
+            "morph_modifier_mask": 2,
+            "morph_keep_mods": true
+        },
+        {
+            "target_usage": "0x00070027",
+            "source_usage": "0x00070027",
+            "scaling": 1000,
+            "layers": [
+                0
+            ],
+            "sticky": false,
+            "tap": false,
+            "hold": false,
+            "source_port": 0,
+            "target_port": 0,
+            "morph_usage": "0x00070026",
+            "morph_modifier_mask": 2,
+            "morph_keep_mods": true
+        },
+        {
+            "target_usage": "0x0007002d",
+            "source_usage": "0x0007002d",
+            "scaling": 1000,
+            "layers": [
+                0
+            ],
+            "sticky": false,
+            "tap": false,
+            "hold": false,
+            "source_port": 0,
+            "target_port": 0,
+            "morph_usage": "0x00070087",
+            "morph_modifier_mask": 2,
+            "morph_keep_mods": true
+        },
+        {
+            "target_usage": "0x0007002d",
+            "source_usage": "0x0007002e",
+            "scaling": 1000,
+            "layers": [
+                0
+            ],
+            "sticky": false,
+            "tap": false,
+            "hold": false,
+            "source_port": 0,
+            "target_port": 0,
+            "morph_usage": "0x00070057",
+            "morph_modifier_mask": 2,
+            "morph_keep_mods": false
+        },
+        {
+            "target_usage": "0x000700e1",
+            "source_usage": "0x0007002e",
+            "scaling": 1000,
+            "layers": [
+                0
+            ],
+            "sticky": false,
+            "tap": false,
+            "hold": false,
+            "source_port": 0,
+            "target_port": 0,
+            "morph_usage": "0x00000000",
+            "morph_modifier_mask": 0,
+            "morph_keep_mods": false
+        },
+        {
+            "target_usage": "0x00070030",
+            "source_usage": "0x0007002f",
+            "scaling": 1000,
+            "layers": [
+                0
+            ],
+            "sticky": false,
+            "tap": false,
+            "hold": false,
+            "source_port": 0,
+            "target_port": 0,
+            "morph_usage": "0x00000000",
+            "morph_modifier_mask": 0,
+            "morph_keep_mods": false
+        },
+        {
+            "target_usage": "0x00070031",
+            "source_usage": "0x00070030",
+            "scaling": 1000,
+            "layers": [
+                0
+            ],
+            "sticky": false,
+            "tap": false,
+            "hold": false,
+            "source_port": 0,
+            "target_port": 0,
+            "morph_usage": "0x00000000",
+            "morph_modifier_mask": 0,
+            "morph_keep_mods": false
+        },
+        {
+            "target_usage": "0x00070087",
+            "source_usage": "0x00070031",
+            "scaling": 1000,
+            "layers": [
+                0
+            ],
+            "sticky": false,
+            "tap": false,
+            "hold": false,
+            "source_port": 0,
+            "target_port": 0,
+            "morph_usage": "0x00070089",
+            "morph_modifier_mask": 2,
+            "morph_keep_mods": true
+        },
+        {
+            "target_usage": "0x00070033",
+            "source_usage": "0x00070033",
+            "scaling": 1000,
+            "layers": [
+                0
+            ],
+            "sticky": false,
+            "tap": false,
+            "hold": false,
+            "source_port": 0,
+            "target_port": 0,
+            "morph_usage": "0x00070034",
+            "morph_modifier_mask": 2,
+            "morph_keep_mods": false
+        },
+        {
+            "target_usage": "0x00070024",
+            "source_usage": "0x00070034",
+            "scaling": 1000,
+            "layers": [
+                0
+            ],
+            "sticky": false,
+            "tap": false,
+            "hold": false,
+            "source_port": 0,
+            "target_port": 0,
+            "morph_usage": "0x0007001f",
+            "morph_modifier_mask": 2,
+            "morph_keep_mods": true
+        },
+        {
+            "target_usage": "0x000700e1",
+            "source_usage": "0x00070034",
+            "scaling": 1000,
+            "layers": [
+                0
+            ],
+            "sticky": false,
+            "tap": false,
+            "hold": false,
+            "source_port": 0,
+            "target_port": 0,
+            "morph_usage": "0x00000000",
+            "morph_modifier_mask": 0,
+            "morph_keep_mods": false
+        },
+        {
+            "target_usage": "0x00070035",
+            "source_usage": "0x00070035",
+            "scaling": 1000,
+            "layers": [
+                0
+            ],
+            "sticky": false,
+            "tap": false,
+            "hold": false,
+            "source_port": 0,
+            "target_port": 0,
+            "morph_usage": "0x0007002e",
+            "morph_modifier_mask": 2,
+            "morph_keep_mods": true
+        }
+    ],
+    "macros": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+    ],
+    "expressions": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+    ],
+    "quirks": []
+}

@@ -1,3 +1,17 @@
+# Forkの変化点
+
+ZMKのMod-Morph相当の機能を追加しています。
+
+ShiftなどのModifiersキーとそれ以外のキーを押した際の入力値を変更することができます。
+
+これにより、US配列キーボードをOS側は日本語キーボード設定のまま、疑似US配列として利用することができます。
+
+キーマップ設定の書き換えは[こちら](https://kamabokoz.github.io/hid-remapper/)を使ってください。
+
+オリジナルのConfigサイトでは設定できないため注意してください。
+
+疑似US配列のサンプル設定はUShairetu.jsonを参考にしてください。
+
 # HID Remapper
 
 _For user documentation please see the project's website at [remapper.org](https://www.remapper.org/)._
