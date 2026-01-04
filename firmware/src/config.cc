@@ -10,7 +10,7 @@
 #include "platform.h"
 #include "remapper.h"
 
-const uint8_t CONFIG_VERSION = 18;
+const uint8_t CONFIG_VERSION = 19;
 
 const uint8_t CONFIG_FLAG_UNMAPPED_PASSTHROUGH = 0x01;
 const uint8_t CONFIG_FLAG_UNMAPPED_PASSTHROUGH_MASK = 0b00001111;
@@ -48,6 +48,19 @@ static mapping_config11_t mapping_config_10_to_11(mapping_config10_t mapping) {
     };
 }
 
+static mapping_config12_t mapping_config_11_to_12(mapping_config11_t mapping) {
+    return (mapping_config12_t){
+        .target_usage = mapping.target_usage,
+        .source_usage = mapping.source_usage,
+        .scaling = mapping.scaling,
+        .layer_mask = mapping.layer_mask,
+        .flags = mapping.flags,
+        .hub_ports = mapping.hub_ports,
+        .morph_usage = 0,
+        .morph_modifier_mask = 0,
+    };
+}
+
 void load_config_v3_v4(const uint8_t* persisted_config) {
     persist_config_v4_t* config = (persist_config_v4_t*) persisted_config;
     if (config->version == 3) {
@@ -61,7 +74,7 @@ void load_config_v3_v4(const uint8_t* persisted_config) {
     interval_override = config->interval_override;
     mapping_config10_t* buffer_mappings = (mapping_config10_t*) (persisted_config + sizeof(persist_config_v4_t));
     for (uint32_t i = 0; i < config->mapping_count; i++) {
-        config_mappings.push_back(mapping_config_10_to_11(buffer_mappings[i]));
+        config_mappings.push_back(mapping_config_11_to_12(mapping_config_10_to_11(buffer_mappings[i])));
         if (config->version == 3) {
             config_mappings.back().layer_mask = 1 << config_mappings.back().layer_mask;
         }
@@ -99,7 +112,7 @@ void load_config_v5(const uint8_t* persisted_config) {
     interval_override = config->interval_override;
     mapping_config10_t* buffer_mappings = (mapping_config10_t*) (persisted_config + sizeof(persist_config_v5_t));
     for (uint32_t i = 0; i < config->mapping_count; i++) {
-        config_mappings.push_back(mapping_config_10_to_11(buffer_mappings[i]));
+        config_mappings.push_back(mapping_config_11_to_12(mapping_config_10_to_11(buffer_mappings[i])));
     }
 
     const uint8_t* macros_config_ptr = (persisted_config + sizeof(persist_config_v5_t) + config->mapping_count * sizeof(mapping_config10_t));
@@ -132,7 +145,7 @@ void load_config_v6(const uint8_t* persisted_config) {
     interval_override = config->interval_override;
     mapping_config10_t* buffer_mappings = (mapping_config10_t*) (persisted_config + sizeof(persist_config_v6_t));
     for (uint32_t i = 0; i < config->mapping_count; i++) {
-        config_mappings.push_back(mapping_config_10_to_11(buffer_mappings[i]));
+        config_mappings.push_back(mapping_config_11_to_12(mapping_config_10_to_11(buffer_mappings[i])));
     }
 
     const uint8_t* macros_config_ptr = (persisted_config + sizeof(persist_config_v6_t) + config->mapping_count * sizeof(mapping_config10_t));
@@ -188,7 +201,7 @@ void load_config_v7_v8(const uint8_t* persisted_config) {
     interval_override = config->interval_override;
     mapping_config10_t* buffer_mappings = (mapping_config10_t*) (persisted_config + sizeof(persist_config_v7_t));
     for (uint32_t i = 0; i < config->mapping_count; i++) {
-        config_mappings.push_back(mapping_config_10_to_11(buffer_mappings[i]));
+        config_mappings.push_back(mapping_config_11_to_12(mapping_config_10_to_11(buffer_mappings[i])));
     }
 
     const uint8_t* macros_config_ptr = (persisted_config + sizeof(persist_config_v7_t) + config->mapping_count * sizeof(mapping_config10_t));
@@ -247,7 +260,7 @@ void load_config_v9(const uint8_t* persisted_config) {
     }
     mapping_config10_t* buffer_mappings = (mapping_config10_t*) (persisted_config + sizeof(persist_config_v9_t));
     for (uint32_t i = 0; i < config->mapping_count; i++) {
-        config_mappings.push_back(mapping_config_10_to_11(buffer_mappings[i]));
+        config_mappings.push_back(mapping_config_11_to_12(mapping_config_10_to_11(buffer_mappings[i])));
     }
 
     const uint8_t* macros_config_ptr = (persisted_config + sizeof(persist_config_v9_t) + config->mapping_count * sizeof(mapping_config10_t));
@@ -308,7 +321,7 @@ void load_config_v10(const uint8_t* persisted_config) {
     macro_entry_duration = config->macro_entry_duration;
     mapping_config10_t* buffer_mappings = (mapping_config10_t*) (persisted_config + sizeof(persist_config_v10_t));
     for (uint32_t i = 0; i < config->mapping_count; i++) {
-        config_mappings.push_back(mapping_config_10_to_11(buffer_mappings[i]));
+        config_mappings.push_back(mapping_config_11_to_12(mapping_config_10_to_11(buffer_mappings[i])));
     }
 
     const uint8_t* macros_config_ptr = (persisted_config + sizeof(persist_config_v10_t) + config->mapping_count * sizeof(mapping_config10_t));
@@ -369,7 +382,7 @@ void load_config_v11(const uint8_t* persisted_config) {
     macro_entry_duration = config->macro_entry_duration;
     mapping_config11_t* buffer_mappings = (mapping_config11_t*) (persisted_config + sizeof(persist_config_v11_t));
     for (uint32_t i = 0; i < config->mapping_count; i++) {
-        config_mappings.push_back(buffer_mappings[i]);
+        config_mappings.push_back(mapping_config_11_to_12(buffer_mappings[i]));
     }
 
     const uint8_t* macros_config_ptr = (persisted_config + sizeof(persist_config_v11_t) + config->mapping_count * sizeof(mapping_config11_t));
@@ -429,7 +442,7 @@ void load_config_v12(const uint8_t* persisted_config) {
     macro_entry_duration = config->macro_entry_duration;
     mapping_config11_t* buffer_mappings = (mapping_config11_t*) (persisted_config + sizeof(persist_config_v12_t));
     for (uint32_t i = 0; i < config->mapping_count; i++) {
-        config_mappings.push_back(buffer_mappings[i]);
+        config_mappings.push_back(mapping_config_11_to_12(buffer_mappings[i]));
     }
 
     const uint8_t* macros_config_ptr = (persisted_config + sizeof(persist_config_v12_t) + config->mapping_count * sizeof(mapping_config11_t));
@@ -497,7 +510,7 @@ void load_config_v13(const uint8_t* persisted_config) {
     macro_entry_duration = config->macro_entry_duration;
     mapping_config11_t* buffer_mappings = (mapping_config11_t*) (persisted_config + sizeof(persist_config_v13_t));
     for (uint32_t i = 0; i < config->mapping_count; i++) {
-        config_mappings.push_back(buffer_mappings[i]);
+        config_mappings.push_back(mapping_config_11_to_12(buffer_mappings[i]));
     }
 
     const uint8_t* macros_config_ptr = (persisted_config + sizeof(persist_config_v13_t) + config->mapping_count * sizeof(mapping_config11_t));
@@ -611,11 +624,13 @@ void load_config(const uint8_t* persisted_config) {
         (version == 14) ||
         (version == 15) ||
         (version == 16) ||
-        (version == 17)) {
+        (version == 17) ||
+        (version == 18)) {
         load_config_v13(persisted_config);
         return;
     }
 
+    // v19+: uses mapping_config12_t with morph support
     persist_config_v18_t* config = (persist_config_v18_t*) persisted_config;
     unmapped_passthrough_layer_mask = config->unmapped_passthrough_layer_mask;
     ignore_auth_dev_inputs = config->flags & (1 << CONFIG_FLAG_IGNORE_AUTH_DEV_INPUTS_BIT);
@@ -630,12 +645,12 @@ void load_config(const uint8_t* persisted_config) {
         our_descriptor_number = 0;
     }
     macro_entry_duration = config->macro_entry_duration;
-    mapping_config11_t* buffer_mappings = (mapping_config11_t*) (persisted_config + sizeof(persist_config_v18_t));
+    mapping_config12_t* buffer_mappings = (mapping_config12_t*) (persisted_config + sizeof(persist_config_v18_t));
     for (uint32_t i = 0; i < config->mapping_count; i++) {
         config_mappings.push_back(buffer_mappings[i]);
     }
 
-    const uint8_t* macros_config_ptr = (persisted_config + sizeof(persist_config_v18_t) + config->mapping_count * sizeof(mapping_config11_t));
+    const uint8_t* macros_config_ptr = (persisted_config + sizeof(persist_config_v18_t) + config->mapping_count * sizeof(mapping_config12_t));
     my_mutex_enter(MutexId::MACROS);
     for (int i = 0; i < NMACROS; i++) {
         macros[i].clear();
@@ -735,7 +750,7 @@ PersistConfigReturnCode persist_config() {
     // check if persisted config will fit in the space we have reserved for it in flash
     int32_t real_persisted_config_size = 0;
     real_persisted_config_size += sizeof(persist_config_t);
-    real_persisted_config_size += config->mapping_count * sizeof(mapping_config11_t);
+    real_persisted_config_size += config->mapping_count * sizeof(mapping_config12_t);
     my_mutex_enter(MutexId::MACROS);
     for (int i = 0; i < NMACROS; i++) {
         real_persisted_config_size += 1;
@@ -764,12 +779,12 @@ PersistConfigReturnCode persist_config() {
         return PersistConfigReturnCode::CONFIG_TOO_BIG;
     }
 
-    mapping_config11_t* buffer_mappings = (mapping_config11_t*) (buffer + sizeof(persist_config_t));
+    mapping_config12_t* buffer_mappings = (mapping_config12_t*) (buffer + sizeof(persist_config_t));
     for (uint32_t i = 0; i < config->mapping_count; i++) {
         buffer_mappings[i] = config_mappings[i];
     }
 
-    uint8_t* macros_config_ptr = (buffer + sizeof(persist_config_t) + config->mapping_count * sizeof(mapping_config11_t));
+    uint8_t* macros_config_ptr = (buffer + sizeof(persist_config_t) + config->mapping_count * sizeof(mapping_config12_t));
     my_mutex_enter(MutexId::MACROS);
     for (int i = 0; i < NMACROS; i++) {
         *macros_config_ptr = macros[i].size();
@@ -839,7 +854,7 @@ uint16_t handle_get_report1(uint8_t report_id, uint8_t* buffer, uint16_t reqlen)
                 break;
             }
             case ConfigCommand::GET_MAPPING: {
-                mapping_config11_t* mapping_config = (mapping_config11_t*) config_buffer;
+                mapping_config12_t* mapping_config = (mapping_config12_t*) config_buffer;
                 if (requested_index < config_mappings.size()) {
                     *mapping_config = config_mappings[requested_index];
                 }
@@ -992,7 +1007,7 @@ void handle_set_report1(uint8_t report_id, uint8_t const* buffer, uint16_t bufsi
                     config_mappings.clear();
                     break;
                 case ConfigCommand::ADD_MAPPING: {
-                    mapping_config11_t* mapping_config = (mapping_config11_t*) config_buffer->data;
+                    mapping_config12_t* mapping_config = (mapping_config12_t*) config_buffer->data;
                     config_mappings.push_back(*mapping_config);
                     break;
                 }

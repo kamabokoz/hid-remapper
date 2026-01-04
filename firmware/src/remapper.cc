@@ -22,6 +22,8 @@
 const uint8_t MAPPING_FLAG_STICKY = 1 << 0;
 const uint8_t MAPPING_FLAG_TAP = 1 << 1;
 const uint8_t MAPPING_FLAG_HOLD = 1 << 2;
+const uint8_t MAPPING_FLAG_MORPH = 1 << 3;
+const uint8_t MAPPING_FLAG_MORPH_KEEP_MODS = 1 << 4;
 
 const uint8_t V_RESOLUTION_BITMASK = (1 << 0);
 const uint8_t H_RESOLUTION_BITMASK = (1 << 2);
@@ -34,6 +36,28 @@ const uint32_t MACRO_USAGE_PAGE = 0xFFF20000;
 const uint32_t EXPR_USAGE_PAGE = 0xFFF30000;
 const uint32_t REGISTER_USAGE_PAGE = 0xFFF50000;
 const uint32_t MIDI_USAGE_PAGE = 0xFFF70000;
+
+// Modifier key usages (keyboard page 0x07)
+const uint32_t MODIFIER_USAGES[8] = {
+    0x000700E0,  // Left Control
+    0x000700E1,  // Left Shift
+    0x000700E2,  // Left Alt
+    0x000700E3,  // Left GUI
+    0x000700E4,  // Right Control
+    0x000700E5,  // Right Shift
+    0x000700E6,  // Right Alt
+    0x000700E7,  // Right GUI
+};
+
+// Modifier mask bits for morph feature
+const uint8_t MORPH_MOD_LCTRL = 1 << 0;
+const uint8_t MORPH_MOD_LSHIFT = 1 << 1;
+const uint8_t MORPH_MOD_LALT = 1 << 2;
+const uint8_t MORPH_MOD_LGUI = 1 << 3;
+const uint8_t MORPH_MOD_RCTRL = 1 << 4;
+const uint8_t MORPH_MOD_RSHIFT = 1 << 5;
+const uint8_t MORPH_MOD_RALT = 1 << 6;
+const uint8_t MORPH_MOD_RGUI = 1 << 7;
 
 const uint32_t ROLLOVER_USAGE = 0x00070001;
 
@@ -92,6 +116,10 @@ std::unordered_map<uint32_t, int32_t> accumulated;  // usage -> relative movemen
 uint8_t layer_state_mask = 1;
 
 std::vector<int32_t*> relative_usages;  // input_state pointers
+
+// Cached pointers to modifier input states for efficient morph checking
+int32_t* modifier_state_ptrs[8] = { nullptr };
+bool modifier_states_initialized = false;
 
 struct macro_entry_t {
     uint8_t duration_left;
@@ -378,6 +406,27 @@ inline uint8_t* get_sticky_state_ptr(uint32_t usage, uint8_t hub_port, bool assi
     return NULL;
 }
 
+// Initialize modifier state pointers for morph feature
+void init_modifier_state_ptrs() {
+    for (int i = 0; i < 8; i++) {
+        modifier_state_ptrs[i] = get_state_ptr(MODIFIER_USAGES[i], 0, true);
+    }
+    modifier_states_initialized = true;
+}
+
+// Check if any of the specified modifiers are pressed
+inline bool check_morph_modifiers(uint8_t modifier_mask) {
+    if (!modifier_states_initialized || modifier_mask == 0) {
+        return false;
+    }
+    for (int i = 0; i < 8; i++) {
+        if ((modifier_mask & (1 << i)) && modifier_state_ptrs[i] != nullptr && *modifier_state_ptrs[i] != 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void set_mapping_from_config() {
     std::unordered_map<uint64_t, std::vector<map_source_t>> reverse_mapping_map;  // hub_port+target -> sources list
     std::unordered_map<uint64_t, uint8_t> sticky_usage_map;
@@ -447,6 +496,9 @@ void set_mapping_from_config() {
                 .input_state = get_state_ptr(mapping.source_usage, source_port),
                 .tap_hold_state = get_tap_hold_state_ptr(mapping.source_usage, source_port),
                 .sticky_state = get_sticky_state_ptr(mapping.source_usage, source_port),
+                .morph_usage = mapping.morph_usage,
+                .morph_modifier_mask = mapping.morph_modifier_mask,
+                .morph_keep_mods = (mapping.flags & MAPPING_FLAG_MORPH_KEEP_MODS) != 0,
             });
 
             if ((mapping.source_usage & 0xFFFF0000) == REGISTER_USAGE_PAGE) {
@@ -701,6 +753,7 @@ void set_mapping_from_config() {
 
     set_gpio_inout_masks(gpio_in_mask_, gpio_out_mask_);
     update_their_descriptor_derivates();
+    init_modifier_state_ptrs();
 }
 
 bool differ_on_absolute(const uint8_t* report1, const uint8_t* report2, uint8_t report_id) {
@@ -1252,6 +1305,25 @@ void process_mapping(bool auto_repeat) {
                     !(active_ports_mask & (1 << map_source.orig_source_port))) {
                     continue;
                 }
+
+                // Check if morph is active (modifier pressed)
+                bool morph_active = (map_source.morph_usage != 0) &&
+                                   check_morph_modifiers(map_source.morph_modifier_mask);
+
+                // If morph is active and input is pressed, output to morph_usage instead
+                if (morph_active && (*map_source.input_state != 0)) {
+                    auto search = our_usages_flat.find(map_source.morph_usage);
+                    if (search != our_usages_flat.end()) {
+                        const usage_def_t& morph_usage_def = search->second;
+                        put_bits(reports[morph_usage_def.report_id],
+                                report_sizes[morph_usage_def.report_id],
+                                morph_usage_def.bitpos,
+                                morph_usage_def.size, 1);
+                    }
+                    // Skip normal output for this map_source
+                    continue;
+                }
+
                 if (map_source.sticky) {
                     if (*map_source.sticky_state & map_source.layer_mask) {
                         value += 1 * map_source.scaling / 1000 - rev_map.default_value;

@@ -145,6 +145,9 @@ struct map_source_t {
     uint8_t* sticky_state;
     int32_t accumulated_scroll;
     uint64_t last_scroll_timestamp;  // XXX we can make this 32 or less bits
+    uint32_t morph_usage = 0;        // alternate target when modifier pressed
+    uint8_t morph_modifier_mask = 0; // which modifiers trigger morph
+    bool morph_keep_mods = false;    // whether to keep modifier in output
 };
 
 struct out_usage_def_t {
@@ -220,6 +223,17 @@ struct __attribute__((packed)) mapping_config11_t {
     uint8_t layer_mask;
     uint8_t flags;
     uint8_t hub_ports = 0;
+};
+
+struct __attribute__((packed)) mapping_config12_t {
+    uint32_t target_usage;
+    uint32_t source_usage;
+    int32_t scaling;  // * 1000
+    uint8_t layer_mask;
+    uint8_t flags;
+    uint8_t hub_ports = 0;
+    uint32_t morph_usage = 0;        // alternate target when modifier pressed
+    uint8_t morph_modifier_mask = 0; // which modifiers trigger morph
 };
 
 struct __attribute__((packed)) config_version_t {

@@ -40,7 +40,7 @@ extern uint8_t macro_entry_duration;
 extern uint8_t gpio_output_mode;
 extern bool normalize_gamepad_inputs;
 
-extern std::vector<mapping_config11_t> config_mappings;
+extern std::vector<mapping_config12_t> config_mappings;
 
 extern uint8_t resolution_multiplier;
 

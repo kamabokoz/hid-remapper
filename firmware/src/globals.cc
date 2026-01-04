@@ -33,7 +33,7 @@ uint8_t macro_entry_duration = 0;  // 0 means 1ms
 uint8_t gpio_output_mode = 0;
 bool normalize_gamepad_inputs = true;
 
-std::vector<mapping_config11_t> config_mappings;
+std::vector<mapping_config12_t> config_mappings;
 
 uint8_t resolution_multiplier = 0;
 

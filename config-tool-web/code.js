@@ -7,8 +7,10 @@ const REPORT_ID_MONITOR = 101;
 const STICKY_FLAG = 1 << 0;
 const TAP_FLAG = 1 << 1;
 const HOLD_FLAG = 1 << 2;
+const MORPH_FLAG = 1 << 3;
+const MORPH_KEEP_MODS_FLAG = 1 << 4;
 const CONFIG_SIZE = 32;
-const CONFIG_VERSION = 18;
+const CONFIG_VERSION = 19;
 const VENDOR_ID = 0xCAFE;
 const PRODUCT_ID = 0xBAF2;
 const DEFAULT_PARTIAL_SCROLL_TIMEOUT = 1000000;
@@ -158,6 +160,9 @@ let config = {
         'scaling': DEFAULT_SCALING,
         'source_port': 0,
         'target_port': 0,
+        'morph_usage': '0x00000000',
+        'morph_modifier_mask': 0,
+        'morph_keep_mods': false,
     }],
     macros: [
         [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
@@ -309,8 +314,8 @@ async function load_from_device() {
 
         for (let i = 0; i < mapping_count; i++) {
             await send_feature_command(GET_MAPPING, [[UINT32, i]]);
-            const [target_usage, source_usage, scaling, layer_mask, mapping_flags, hub_ports] =
-                await read_config_feature([UINT32, UINT32, INT32, UINT8, UINT8, UINT8]);
+            const [target_usage, source_usage, scaling, layer_mask, mapping_flags, hub_ports, morph_usage, morph_modifier_mask] =
+                await read_config_feature([UINT32, UINT32, INT32, UINT8, UINT8, UINT8, UINT32, UINT8]);
             config['mappings'].push({
                 'target_usage': '0x' + target_usage.toString(16).padStart(8, '0'),
                 'source_usage': '0x' + source_usage.toString(16).padStart(8, '0'),
@@ -321,6 +326,9 @@ async function load_from_device() {
                 'hold': (mapping_flags & HOLD_FLAG) != 0,
                 'source_port': hub_ports & 0x0F,
                 'target_port': (hub_ports >> 4) & 0x0F,
+                'morph_usage': '0x' + morph_usage.toString(16).padStart(8, '0'),
+                'morph_modifier_mask': morph_modifier_mask,
+                'morph_keep_mods': (mapping_flags & MORPH_KEEP_MODS_FLAG) != 0,
             });
         }
 
@@ -463,8 +471,11 @@ async function save_to_device() {
                 [UINT8, layer_list_to_mask(mapping['layers'])],
                 [UINT8, (mapping['sticky'] ? STICKY_FLAG : 0)
                     | (mapping['tap'] ? TAP_FLAG : 0)
-                    | (mapping['hold'] ? HOLD_FLAG : 0)],
+                    | (mapping['hold'] ? HOLD_FLAG : 0)
+                    | (mapping['morph_keep_mods'] ? MORPH_KEEP_MODS_FLAG : 0)],
                 [UINT8, ((mapping['target_port'] & 0x0F) << 4) | (mapping['source_port'] & 0x0F)],
+                [UINT32, parseInt(mapping['morph_usage'] || '0x00000000', 16)],
+                [UINT8, mapping['morph_modifier_mask'] || 0],
             ]);
         }
 
@@ -764,6 +775,13 @@ function set_ui_state() {
         // set it to false to preserve previous behavior.
         config['normalize_gamepad_inputs'] = false;
     }
+    if (config['version'] < 19) {
+        for (const mapping of config['mappings']) {
+            mapping['morph_usage'] = '0x00000000';
+            mapping['morph_modifier_mask'] = 0;
+            mapping['morph_keep_mods'] = false;
+        }
+    }
     if (config['version'] < CONFIG_VERSION) {
         config['version'] = CONFIG_VERSION;
     }
@@ -821,6 +839,70 @@ function add_mapping(mapping) {
     target_button.title = mapping['target_usage'];
     target_button.addEventListener("click", show_usage_modal(mapping, 'target', clone));
     set_port_badge(target_button, mapping['target_port']);
+
+    // Morph UI setup
+    const morph_checkbox = clone.querySelector(".morph_checkbox");
+    const morph_row = clone.querySelector(".morph_row");
+    const morph_usage_button = clone.querySelector(".morph_usage_button");
+    const morph_keep_mods_checkbox = clone.querySelector(".morph_keep_mods_checkbox");
+
+    // Initialize morph checkbox state
+    const has_morph = mapping['morph_usage'] && mapping['morph_usage'] !== '0x00000000';
+    morph_checkbox.checked = has_morph;
+    morph_row.classList.toggle('d-none', !has_morph);
+
+    // Morph checkbox toggles visibility
+    morph_checkbox.addEventListener("change", function () {
+        morph_row.classList.toggle('d-none', !morph_checkbox.checked);
+        if (!morph_checkbox.checked) {
+            mapping['morph_usage'] = '0x00000000';
+            mapping['morph_modifier_mask'] = 0;
+            mapping['morph_keep_mods'] = false;
+            morph_usage_button.querySelector('.button_label').innerText = 'Select';
+            morph_usage_button.title = '0x00000000';
+            morph_keep_mods_checkbox.checked = false;
+            // Reset modifier checkboxes
+            clone.querySelectorAll('[class*="morph_mod_"]').forEach((cb) => {
+                if (cb.type === 'checkbox') cb.checked = false;
+            });
+        }
+    });
+
+    // Morph usage button
+    morph_usage_button.querySelector('.button_label').innerText =
+        has_morph ? readable_target_usage_name(mapping['morph_usage']) : 'Select';
+    morph_usage_button.title = mapping['morph_usage'] || '0x00000000';
+    morph_usage_button.addEventListener("click", show_morph_usage_modal(mapping, morph_usage_button));
+
+    // Modifier checkboxes
+    const mod_checkboxes = [
+        { class: 'morph_mod_lctrl', bit: 0 },
+        { class: 'morph_mod_lshift', bit: 1 },
+        { class: 'morph_mod_lalt', bit: 2 },
+        { class: 'morph_mod_lgui', bit: 3 },
+        { class: 'morph_mod_rctrl', bit: 4 },
+        { class: 'morph_mod_rshift', bit: 5 },
+        { class: 'morph_mod_ralt', bit: 6 },
+        { class: 'morph_mod_rgui', bit: 7 },
+    ];
+    for (const mod of mod_checkboxes) {
+        const cb = clone.querySelector('.' + mod.class);
+        cb.checked = (mapping['morph_modifier_mask'] & (1 << mod.bit)) !== 0;
+        cb.addEventListener("change", function () {
+            if (cb.checked) {
+                mapping['morph_modifier_mask'] |= (1 << mod.bit);
+            } else {
+                mapping['morph_modifier_mask'] &= ~(1 << mod.bit);
+            }
+        });
+    }
+
+    // Keep mods checkbox
+    morph_keep_mods_checkbox.checked = mapping['morph_keep_mods'] || false;
+    morph_keep_mods_checkbox.addEventListener("change", function () {
+        mapping['morph_keep_mods'] = morph_keep_mods_checkbox.checked;
+    });
+
     container.appendChild(clone);
     set_forced_layers(mapping, clone);
     set_forced_flags(mapping, clone);
@@ -989,7 +1071,7 @@ function add_crc(data) {
 }
 
 function check_json_version(config_version) {
-    if (!([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].includes(config_version))) {
+    if (!([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19].includes(config_version))) {
         throw new Error("Incompatible version.");
     }
 }
@@ -1115,6 +1197,26 @@ function expression_onchange(i) {
     }
 }
 
+function show_morph_usage_modal(mapping_, button_element_) {
+    return function () {
+        const modal_element = document.getElementById('target_usage_modal');
+        modal_element.querySelectorAll('.usage_button').forEach((button) => {
+            let clone = button.cloneNode(true);
+            button.parentNode.replaceChild(clone, button);
+            clone.addEventListener("click", function () {
+                const usage = clone.getAttribute('data-hid-usage');
+                mapping_['morph_usage'] = usage;
+                button_element_.querySelector('.button_label').innerText = readable_target_usage_name(usage);
+                button_element_.title = usage;
+                target_modal.hide();
+            });
+        });
+        // Hide hub port controls for morph usage
+        modal_element.querySelectorAll('.hub_port_inputs').forEach((x) => x.classList.add('d-none'));
+        target_modal.show();
+    };
+}
+
 function show_usage_modal(mapping_, source_or_target, element_) {
     return function () {
         // When set_mappings_ui_state() recreates the elements, it will update modal_return_element to
@@ -1191,6 +1293,9 @@ function add_empty_mapping(source_usage = '0x00000000') {
         'scaling': DEFAULT_SCALING,
         'source_port': 0,
         'target_port': 0,
+        'morph_usage': '0x00000000',
+        'morph_modifier_mask': 0,
+        'morph_keep_mods': false,
     };
     config['mappings'].push(new_mapping);
     add_mapping(new_mapping);

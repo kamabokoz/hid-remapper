@@ -57,7 +57,7 @@
                             <div class="col-3">
                                 <div class="d-flex align-items-end">
                                     <div class="flex-fill text-center"><a href="#" id="layer-column-header" class="text-decoration-none text-reset d-block">Layer</a></div>
-                                    <div class="text-start pt-1" style="writing-mode: vertical-rl; transform: rotate(180deg); line-height: 1.2em;">Sticky<br>Tap<br>Hold</div>
+                                    <div class="text-start pt-1" style="writing-mode: vertical-rl; transform: rotate(180deg); line-height: 1.2em;">Sticky<br>Tap<br>Hold<br>Morph</div>
                                 </div>
                             </div>
                             <div class="col-2 text-center">Scaling</div>
@@ -337,73 +337,127 @@
     </div>
 
     <template id="mapping_template">
-        <div class="row mb-1 mapping_container">
-            <div class="col-1"><button type="button" class="btn btn-primary delete_button">×</button></div>
-            <div class="col-3">
-                <button type="button" class="btn btn-primary w-100 source_button position-relative">
-                    <span class="position-absolute top-50 start-0 translate-middle badge bg-info rounded-pill hub_port_badge">0</span>
-                    <span class="button_label">source</span>
-                </button>
-            </div>
-            <div class="col-3">
-                <button type="button" class="btn btn-primary w-100 target_button position-relative">
-                    <span class="position-absolute top-50 start-0 translate-middle badge bg-info rounded-pill hub_port_badge">0</span>
-                    <span class="button_label">target</span>
-                </button>
-            </div>
-            <div class="col-3">
-                <div class="d-flex lh-1 text-center">
-                    <div class="flex-fill row gx-1 justify-content-center">
-                        <div class="col-auto">
-                            <input class="form-check-input layer_checkbox0" type="checkbox" value="">
-                            <br><span class="text-muted small">0</span>
+        <div class="mapping_container">
+            <div class="row mb-1">
+                <div class="col-1"><button type="button" class="btn btn-primary delete_button">×</button></div>
+                <div class="col-3">
+                    <button type="button" class="btn btn-primary w-100 source_button position-relative">
+                        <span class="position-absolute top-50 start-0 translate-middle badge bg-info rounded-pill hub_port_badge">0</span>
+                        <span class="button_label">source</span>
+                    </button>
+                </div>
+                <div class="col-3">
+                    <button type="button" class="btn btn-primary w-100 target_button position-relative">
+                        <span class="position-absolute top-50 start-0 translate-middle badge bg-info rounded-pill hub_port_badge">0</span>
+                        <span class="button_label">target</span>
+                    </button>
+                </div>
+                <div class="col-3">
+                    <div class="d-flex lh-1 text-center">
+                        <div class="flex-fill row gx-1 justify-content-center">
+                            <div class="col-auto">
+                                <input class="form-check-input layer_checkbox0" type="checkbox" value="">
+                                <br><span class="text-muted small">0</span>
+                            </div>
+                            <div class="col-auto">
+                                <input class="form-check-input layer_checkbox1" type="checkbox" value="">
+                                <br><span class="text-muted small">1</span>
+                            </div>
+                            <div class="col-auto">
+                                <input class="form-check-input layer_checkbox2" type="checkbox" value="">
+                                <br><span class="text-muted small">2</span>
+                            </div>
+                            <div class="col-auto">
+                                <input class="form-check-input layer_checkbox3" type="checkbox" value="">
+                                <br><span class="text-muted small">3</span>
+                            </div>
+                            <div class="col-auto d-none">
+                                <input class="form-check-input layer_checkbox4" type="checkbox" value="">
+                                <br><span class="text-muted small">4</span>
+                            </div>
+                            <div class="col-auto d-none">
+                                <input class="form-check-input layer_checkbox5" type="checkbox" value="">
+                                <br><span class="text-muted small">5</span>
+                            </div>
+                            <div class="col-auto d-none">
+                                <input class="form-check-input layer_checkbox6" type="checkbox" value="">
+                                <br><span class="text-muted small">6</span>
+                            </div>
+                            <div class="col-auto d-none">
+                                <input class="form-check-input layer_checkbox7" type="checkbox" value="">
+                                <br><span class="text-muted small">7</span>
+                            </div>
                         </div>
-                        <div class="col-auto">
-                            <input class="form-check-input layer_checkbox1" type="checkbox" value="">
-                            <br><span class="text-muted small">1</span>
-                        </div>
-                        <div class="col-auto">
-                            <input class="form-check-input layer_checkbox2" type="checkbox" value="">
-                            <br><span class="text-muted small">2</span>
-                        </div>
-                        <div class="col-auto">
-                            <input class="form-check-input layer_checkbox3" type="checkbox" value="">
-                            <br><span class="text-muted small">3</span>
-                        </div>
-                        <div class="col-auto d-none">
-                            <input class="form-check-input layer_checkbox4" type="checkbox" value="">
-                            <br><span class="text-muted small">4</span>
-                        </div>
-                        <div class="col-auto d-none">
-                            <input class="form-check-input layer_checkbox5" type="checkbox" value="">
-                            <br><span class="text-muted small">5</span>
-                        </div>
-                        <div class="col-auto d-none">
-                            <input class="form-check-input layer_checkbox6" type="checkbox" value="">
-                            <br><span class="text-muted small">6</span>
-                        </div>
-                        <div class="col-auto d-none">
-                            <input class="form-check-input layer_checkbox7" type="checkbox" value="">
-                            <br><span class="text-muted small">7</span>
+                        <div class="row gx-1">
+                            <div class="col-auto ms-1" title="Sticky">
+                                <input class="form-check-input sticky_checkbox" type="checkbox" value="">
+                                <br><span class="text-muted small">S</span>
+                            </div>
+                            <div class="col-auto" title="Tap">
+                                <input class="form-check-input tap_checkbox" type="checkbox" value="">
+                                <br><span class="text-muted small">T</span>
+                            </div>
+                            <div class="col-auto" title="Hold">
+                                <input class="form-check-input hold_checkbox" type="checkbox" value="">
+                                <br><span class="text-muted small">H</span>
+                            </div>
+                            <div class="col-auto" title="Morph">
+                                <input class="form-check-input morph_checkbox" type="checkbox" value="">
+                                <br><span class="text-muted small">M</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="row gx-1">
-                        <div class="col-auto ms-1" title="Sticky">
-                            <input class="form-check-input sticky_checkbox" type="checkbox" value="">
-                            <br><span class="text-muted small">S</span>
+                </div>
+                <div class="col-2"><input class="form-control scaling_input text-end" type="number"></div>
+            </div>
+            <div class="row mb-2 morph_row d-none">
+                <div class="col-1"></div>
+                <div class="col-11">
+                    <div class="d-flex align-items-center gap-2 p-2 bg-light rounded">
+                        <span class="text-muted small">Morph:</span>
+                        <button type="button" class="btn btn-sm btn-outline-primary morph_usage_button">
+                            <span class="button_label">Select</span>
+                        </button>
+                        <span class="text-muted small ms-2">Modifiers:</span>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input morph_mod_lctrl" type="checkbox" value="">
+                            <label class="form-check-label small">LC</label>
                         </div>
-                        <div class="col-auto" title="Tap">
-                            <input class="form-check-input tap_checkbox" type="checkbox" value="">
-                            <br><span class="text-muted small">T</span>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input morph_mod_lshift" type="checkbox" value="">
+                            <label class="form-check-label small">LS</label>
                         </div>
-                        <div class="col-auto" title="Hold">
-                            <input class="form-check-input hold_checkbox" type="checkbox" value="">
-                            <br><span class="text-muted small">H</span>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input morph_mod_lalt" type="checkbox" value="">
+                            <label class="form-check-label small">LA</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input morph_mod_lgui" type="checkbox" value="">
+                            <label class="form-check-label small">LG</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input morph_mod_rctrl" type="checkbox" value="">
+                            <label class="form-check-label small">RC</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input morph_mod_rshift" type="checkbox" value="">
+                            <label class="form-check-label small">RS</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input morph_mod_ralt" type="checkbox" value="">
+                            <label class="form-check-label small">RA</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-0">
+                            <input class="form-check-input morph_mod_rgui" type="checkbox" value="">
+                            <label class="form-check-label small">RG</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-0 ms-2">
+                            <input class="form-check-input morph_keep_mods_checkbox" type="checkbox" value="">
+                            <label class="form-check-label small">Keep mods</label>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-2"><input class="form-control scaling_input text-end" type="number"></div>
         </div>
     </template>
 
