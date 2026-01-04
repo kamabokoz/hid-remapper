@@ -874,16 +874,11 @@ function add_mapping(mapping) {
     morph_usage_button.title = mapping['morph_usage'] || '0x00000000';
     morph_usage_button.addEventListener("click", show_morph_usage_modal(mapping, morph_usage_button));
 
-    // Modifier checkboxes
+    // Modifier checkboxes (no L/R distinction: bit 0=Ctrl, bit 1=Shift, bit 2=Alt)
     const mod_checkboxes = [
-        { class: 'morph_mod_lctrl', bit: 0 },
-        { class: 'morph_mod_lshift', bit: 1 },
-        { class: 'morph_mod_lalt', bit: 2 },
-        { class: 'morph_mod_lgui', bit: 3 },
-        { class: 'morph_mod_rctrl', bit: 4 },
-        { class: 'morph_mod_rshift', bit: 5 },
-        { class: 'morph_mod_ralt', bit: 6 },
-        { class: 'morph_mod_rgui', bit: 7 },
+        { class: 'morph_mod_ctrl', bit: 0 },
+        { class: 'morph_mod_shift', bit: 1 },
+        { class: 'morph_mod_alt', bit: 2 },
     ];
     for (const mod of mod_checkboxes) {
         const cb = clone.querySelector('.' + mod.class);

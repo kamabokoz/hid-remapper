@@ -49,15 +49,10 @@ const uint32_t MODIFIER_USAGES[8] = {
     0x000700E7,  // Right GUI
 };
 
-// Modifier mask bits for morph feature
-const uint8_t MORPH_MOD_LCTRL = 1 << 0;
-const uint8_t MORPH_MOD_LSHIFT = 1 << 1;
-const uint8_t MORPH_MOD_LALT = 1 << 2;
-const uint8_t MORPH_MOD_LGUI = 1 << 3;
-const uint8_t MORPH_MOD_RCTRL = 1 << 4;
-const uint8_t MORPH_MOD_RSHIFT = 1 << 5;
-const uint8_t MORPH_MOD_RALT = 1 << 6;
-const uint8_t MORPH_MOD_RGUI = 1 << 7;
+// Modifier mask bits for morph feature (no L/R distinction)
+const uint8_t MORPH_MOD_CTRL = 1 << 0;
+const uint8_t MORPH_MOD_SHIFT = 1 << 1;
+const uint8_t MORPH_MOD_ALT = 1 << 2;
 
 const uint32_t ROLLOVER_USAGE = 0x00070001;
 
@@ -414,15 +409,29 @@ void init_modifier_state_ptrs() {
     modifier_states_initialized = true;
 }
 
-// Check if any of the specified modifiers are pressed
+// Check if any of the specified modifiers are pressed (no L/R distinction)
+// bit 0 = Ctrl, bit 1 = Shift, bit 2 = Alt
 inline bool check_morph_modifiers(uint8_t modifier_mask) {
     if (!modifier_states_initialized || modifier_mask == 0) {
         return false;
     }
-    for (int i = 0; i < 8; i++) {
-        if ((modifier_mask & (1 << i)) && modifier_state_ptrs[i] != nullptr && *modifier_state_ptrs[i] != 0) {
-            return true;
-        }
+    // Check Ctrl (Left Ctrl = index 0, Right Ctrl = index 4)
+    if ((modifier_mask & MORPH_MOD_CTRL) &&
+        ((modifier_state_ptrs[0] != nullptr && *modifier_state_ptrs[0] != 0) ||
+         (modifier_state_ptrs[4] != nullptr && *modifier_state_ptrs[4] != 0))) {
+        return true;
+    }
+    // Check Shift (Left Shift = index 1, Right Shift = index 5)
+    if ((modifier_mask & MORPH_MOD_SHIFT) &&
+        ((modifier_state_ptrs[1] != nullptr && *modifier_state_ptrs[1] != 0) ||
+         (modifier_state_ptrs[5] != nullptr && *modifier_state_ptrs[5] != 0))) {
+        return true;
+    }
+    // Check Alt (Left Alt = index 2, Right Alt = index 6)
+    if ((modifier_mask & MORPH_MOD_ALT) &&
+        ((modifier_state_ptrs[2] != nullptr && *modifier_state_ptrs[2] != 0) ||
+         (modifier_state_ptrs[6] != nullptr && *modifier_state_ptrs[6] != 0))) {
+        return true;
     }
     return false;
 }
@@ -1400,16 +1409,27 @@ void process_mapping(bool auto_repeat) {
     }
 
     // Suppress modifiers that were consumed by morph (keep_mods=false)
+    // Suppress both left and right variants
     if (consumed_modifiers_mask != 0) {
-        for (int i = 0; i < 8; i++) {
-            if (consumed_modifiers_mask & (1 << i)) {
-                auto search = our_usages_flat.find(MODIFIER_USAGES[i]);
-                if (search != our_usages_flat.end()) {
-                    const usage_def_t& mod_usage_def = search->second;
-                    put_bits(reports[mod_usage_def.report_id],
-                            report_sizes[mod_usage_def.report_id],
-                            mod_usage_def.bitpos,
-                            mod_usage_def.size, 0);
+        // Modifier indices: 0=LCtrl, 1=LShift, 2=LAlt, 3=LGui, 4=RCtrl, 5=RShift, 6=RAlt, 7=RGui
+        int modifier_pairs[3][2] = {
+            {0, 4},  // Ctrl: Left=0, Right=4
+            {1, 5},  // Shift: Left=1, Right=5
+            {2, 6},  // Alt: Left=2, Right=6
+        };
+        for (int m = 0; m < 3; m++) {
+            if (consumed_modifiers_mask & (1 << m)) {
+                // Suppress both left and right
+                for (int side = 0; side < 2; side++) {
+                    int idx = modifier_pairs[m][side];
+                    auto search = our_usages_flat.find(MODIFIER_USAGES[idx]);
+                    if (search != our_usages_flat.end()) {
+                        const usage_def_t& mod_usage_def = search->second;
+                        put_bits(reports[mod_usage_def.report_id],
+                                report_sizes[mod_usage_def.report_id],
+                                mod_usage_def.bitpos,
+                                mod_usage_def.size, 0);
+                    }
                 }
             }
         }
